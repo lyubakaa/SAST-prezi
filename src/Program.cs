@@ -1,22 +1,28 @@
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
 using DotnetDemoapp;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApplicationInsightsTelemetry();
+// Add services to the container
+builder.Services.AddRazorPages().AddRazorPagesOptions(options => 
+{
+    options.RootDirectory = "/Pages";
+});
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-app.UseStaticFiles();
-app.MapRazorPages();
-app.UseStatusCodePages("text/html", "<!doctype html><h1>&#128163;HTTP error! Status code: {0}</h1>");
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
 
-// API routes for monitoring data and weather 
+app.UseStaticFiles();
+app.UseRouting();
+
+app.MapRazorPages();
+app.MapControllers();
+
+// API routes for monitoring data and weather
 app.MapGet("/api/monitor", async () =>
 {
     return new
@@ -28,10 +34,14 @@ app.MapGet("/api/monitor", async () =>
 
 app.MapGet("/api/weather/{posLat:double}/{posLong:double}", async (double posLat, double posLong) =>
 {
-    string apiKey = builder.Configuration.GetValue<string>("Weather:ApiKey");
+    string apiKey = app.Configuration.GetValue<string>("Weather:ApiKey");
+    if (string.IsNullOrEmpty(apiKey))
+    {
+        return Results.BadRequest("Weather API key not configured");
+    }
+    
     (int status, string data) = await ApiHelper.GetOpenWeather(apiKey, posLat, posLong);
     return status == 200 ? Results.Content(data, "application/json") : Results.StatusCode(status);
 });
 
-// Easy to miss this, starting the whole app and server!
 app.Run();

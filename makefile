@@ -1,6 +1,6 @@
 # Used by `image`, `push` & `deploy` targets, override as required
 IMAGE_REG ?= docker.io
-IMAGE_REPO ?= lyubakaaa/sast
+IMAGE_REPO ?= writetoritika/dotnet-monitoring
 IMAGE_TAG ?= latest
 
 # Used by `test-api` target
