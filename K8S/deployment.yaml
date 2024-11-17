@@ -51,7 +51,8 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 5000
-  type: LoadBalancer
+    nodePort: 30080
+  type: NodePort
 
 ---
 apiVersion: networking.k8s.io/v1
@@ -61,10 +62,12 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
-  - host: app.local  # We'll add this to /etc/hosts
+  - host: app.local
     http:
       paths:
       - path: /
