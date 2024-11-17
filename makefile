@@ -3,11 +3,6 @@ IMAGE_REG ?= docker.io
 IMAGE_REPO ?= writetoritika/dotnet-monitoring
 IMAGE_TAG ?= latest
 
-# Used by `deploy` target, sets Azure webap defaults, override as required
-AZURE_RES_GROUP ?= demoapps
-AZURE_REGION ?= northeurope
-AZURE_APP_NAME ?= dotnet-demoapp
-
 # Used by `test-api` target
 TEST_HOST ?= localhost:5000
 
@@ -35,18 +30,11 @@ push: ## 📤 Push container image to registry
 run: ## 🏃‍ Run locally using Dotnet CLI
 	dotnet watch --project $(SRC_DIR)/dotnet-demoapp.csproj
 
-deploy: ## 🚀 Deploy to Azure Container App 
-	az group create --resource-group $(AZURE_RES_GROUP) --location $(AZURE_REGION) -o table
-	az deployment group create --template-file deploy/container-app.bicep \
-		--resource-group $(AZURE_RES_GROUP) \
-		--parameters appName=$(AZURE_APP_NAME) \
-		--parameters image=$(IMAGE_REG)/$(IMAGE_REPO):$(IMAGE_TAG) -o table
-	@sleep 1
-	@echo "### 🚀 App deployed & available here: $(shell az deployment group show --resource-group $(AZURE_RES_GROUP) --name container-app --query "properties.outputs.appURL.value" -o tsv)/"
+deploy: ## 🚀 Deploy to K3s cluster
+	kubectl apply -f K8S/deployment.yaml
 
-undeploy: ## 💀 Remove from Azure 
-	@echo "### WARNING! Going to delete $(AZURE_RES_GROUP) 😲"
-	az group delete -n $(AZURE_RES_GROUP) -o table --no-wait
+undeploy: ## 💀 Remove from K3s cluster
+	kubectl delete -f K8S/deployment.yaml
 
 test: ## 🎯 Unit tests with xUnit
 	dotnet test tests/tests.csproj 

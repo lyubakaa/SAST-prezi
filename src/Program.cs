@@ -6,27 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationInsightsTelemetry();
 
-// Make Azure AD auth an optional feature if the config is present
-if (builder.Configuration.GetSection("AzureAd").Exists() && builder.Configuration.GetSection("AzureAd").GetValue<String>("ClientId") != "")
-{
-    builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration)
-                    .EnableTokenAcquisitionToCallDownstreamApi()
-                    .AddMicrosoftGraph()
-                    .AddInMemoryTokenCaches();
-}
-builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
-
-// ============================================================
-
 var app = builder.Build();
-
-// Make Azure AD auth an optional feature if the config is present
-if (builder.Configuration.GetSection("AzureAd").Exists() && builder.Configuration.GetSection("AzureAd").GetValue<String>("ClientId") != "")
-{
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.MapControllers();    // Note. Only Needed for Microsoft.Identity.Web.UI
-}
 
 app.UseStaticFiles();
 app.MapRazorPages();
