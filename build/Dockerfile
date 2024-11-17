@@ -18,8 +18,18 @@ RUN dotnet publish --configuration Release -o /app
 # =======================================================
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine
 
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Set working directory and change ownership
 WORKDIR /app
 COPY --from=build /app .
+
+# Change ownership of the app directory to non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
 
 # Expose port 5000 from Kestrel webserver
 EXPOSE 5000
