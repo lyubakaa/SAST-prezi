@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: dotnet-app
-        image: lyubakaaa/sast:latest
+        image: writetoritika/dotnet-monitoring:latest
         ports:
         - containerPort: 5000
         env:
@@ -23,6 +23,8 @@ spec:
             secretKeyRef:
               name: dotnet-secrets
               key: weatherKey
+        - name: ApplicationInsights__Enabled
+          value: "false"
         resources:
           requests:
             memory: "128Mi"
