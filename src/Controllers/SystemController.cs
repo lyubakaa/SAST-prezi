@@ -11,8 +11,13 @@ namespace DotnetDemoapp.Controllers
         private readonly string _adminPassword = "admin123!@#";  // Hardcoded credential
 
         [HttpGet("execute")]
-        public IActionResult ExecuteCommand(string command)
+        public IActionResult ExecuteCommand(string command, string password)
         {
+            if (password != _adminPassword)
+            {
+                return Unauthorized();
+            }
+
             // Intentionally vulnerable to command injection
             var process = new Process
             {
@@ -33,8 +38,13 @@ namespace DotnetDemoapp.Controllers
         }
 
         [HttpGet("files")]
-        public IActionResult ReadFile(string path)
+        public IActionResult ReadFile(string path, string password)
         {
+            if (password != _adminPassword)
+            {
+                return Unauthorized();
+            }
+
             // Intentionally vulnerable to path traversal
             if (System.IO.File.Exists(path))
             {
