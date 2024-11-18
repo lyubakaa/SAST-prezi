@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.IO;
 
 namespace DotnetDemoapp.Controllers
 {
@@ -7,8 +8,10 @@ namespace DotnetDemoapp.Controllers
     [Route("[controller]")]
     public class SystemController : ControllerBase
     {
-        [HttpGet("ping")]
-        public IActionResult Ping(string host)
+        private readonly string _adminPassword = "admin123!@#";  // Hardcoded credential
+
+        [HttpGet("execute")]
+        public IActionResult ExecuteCommand(string command)
         {
             // Intentionally vulnerable to command injection
             var process = new Process
@@ -16,28 +19,27 @@ namespace DotnetDemoapp.Controllers
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "/bin/bash",
-                    Arguments = $"-c \"ping -c 4 {host}\"",
-                    RedirectStandardOutput = true,
+                    Arguments = $"-c {command}",  // Direct command injection
                     UseShellExecute = false,
-                    CreateNoWindow = true,
+                    RedirectStandardOutput = true
                 }
             };
-            
+
             process.Start();
-            string result = process.StandardOutput.ReadToEnd();
+            string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
-            
-            return Ok(result);
+
+            return Ok(new { output });
         }
 
         [HttpGet("files")]
-        public IActionResult ListFiles(string path)
+        public IActionResult ReadFile(string path)
         {
-            // Another vulnerability - path traversal
-            if (System.IO.Directory.Exists(path))
+            // Intentionally vulnerable to path traversal
+            if (System.IO.File.Exists(path))
             {
-                var files = System.IO.Directory.GetFiles(path);
-                return Ok(files);
+                string content = System.IO.File.ReadAllText(path);
+                return Ok(content);
             }
             return NotFound();
         }
