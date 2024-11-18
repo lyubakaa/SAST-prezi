@@ -18,6 +18,10 @@ spec:
         env:
         - name: Weather__ApiKey
           value: "b1cb2352ce3d78fdae0392d53f35402c"
+        - name: AdminPassword
+          value: "admin123!@#"
+        - name: DatabaseConnection
+          value: "Server=prod-db;Database=app;User=admin;Password=secretpass123"
         - name: ApplicationInsights__Enabled
           value: "false"
         ports:
